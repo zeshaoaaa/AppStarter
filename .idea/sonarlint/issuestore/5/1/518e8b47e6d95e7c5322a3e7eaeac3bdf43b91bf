@@ -1,0 +1,11 @@
+
+Zsquid:S1155v">Use isEmpty() to check whether the collection is empty or not.(±ÎÝšûÿÿÿÿ
+csquid:S00112t"FDefine and throw a dedicated exception instead of using a generic one.(Â¢ÁÌýÿÿÿÿ
+^squid:S2142ó"FEither re-interrupt this method or rethrow the "InterruptedException".(ä ¹€
+^squid:S00112K"FDefine and throw a dedicated exception instead of using a generic one.(ôú£ƒ
+V
+squid:S899ñ":Do something with the "boolean" value returned by "await".(Ÿþã™ùÿÿÿÿ
+[squid:S1155¶">Use isEmpty() to check whether the collection is empty or not.(¬›äŒýÿÿÿÿ
+Bsquid:S00108ó")Either remove or fill this block of code.(ä ¹€
+Zsquid:S1155_">Use isEmpty() to check whether the collection is empty or not.(ÕÊ»—ùÿÿÿÿ
+Qsquid:S2864¦"4Iterate over the "entrySet" instead of the "keySet".(ô¹ÉÞúÿÿÿÿ

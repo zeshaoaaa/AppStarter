@@ -1,0 +1,5 @@
+
+Tsquid:S2696-"6Make the enclosing method "static" or remove this set.(× ¿ß8¶ù©Ê-
+Hsquid:S1481*"*Remove this unused "times" local variable.(×Û¯8¶ù©Ê-
+rsquid:S00116"SRename this field "DEV_MODE" to match the regular expression '^[a-z][a-zA-Z0-9]*$'.(ŸšÙ8ö¢Ê-
+Wsquid:S1854*"9Remove this useless assignment to local variable "times".(×Û¯8¶ù©Ê-

@@ -1,0 +1,6 @@
+
+†"squid:ClassVariableVisibilityCheck"XMake dnsStartTime a static final constant or non-public and provide accessors if needed.(üóÎ…
+ƒ"squid:ClassVariableVisibilityCheck"VMake dnsEndTime a static final constant or non-public and provide accessors if needed.( ¬á
+"squid:ClassVariableVisibilityCheck"\Make responseBodySize a static final constant or non-public and provide accessors if needed.(ğÒî¶øÿÿÿÿ
+‰"squid:ClassVariableVisibilityCheck"VMake apiSuccess a static final constant or non-public and provide accessors if needed.(Ş´¼¬ûÿÿÿÿ
+Š"squid:ClassVariableVisibilityCheck"WMake errorReason a static final constant or non-public and provide accessors if needed.(´ùÂÿıÿÿÿÿ
