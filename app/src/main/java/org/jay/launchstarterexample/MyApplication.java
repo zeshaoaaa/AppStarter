@@ -30,13 +30,13 @@ public class MyApplication extends Application {
         TaskDispatcher.init(this);
         TaskDispatcher dispatcher = TaskDispatcher.createInstance();
         dispatcher
-                // .addTask(new InitAMapTask())
-                // .addTask(new InitStethoTask())
-                // .addTask(new InitWeexTask())
-                // .addTask(new InitBuglyTask())
-                // .addTask(new InitFrescoTask())
+                .addTask(new InitAMapTask())
+                .addTask(new InitStethoTask())
+                .addTask(new InitWeexTask())
+                .addTask(new InitBuglyTask())
+                .addTask(new InitFrescoTask())
                 .addTask(new InitJPushTask())
-                // .addTask(new InitUmengTask())
+                .addTask(new InitUmengTask())
                 .addTask(new GetDeviceIdTask())
                 .start();
 
