@@ -27,27 +27,16 @@ public class MyApplication extends Application {
     @Override
     protected void attachBaseContext(Context base) {
         super.attachBaseContext(base);
-
-        LaunchTimer.startRecord();
         MultiDex.install(this);
     }
 
     @Override
     public void onCreate() {
         super.onCreate();
-
-        MMKV.initialize(this);
-        MMKV.defaultMMKV().encode("times",100);
-
-        int times = MMKV.defaultMMKV().decodeInt("times");
-
-        LaunchTimer.startRecord();
         mApplication = this;
 
         TaskDispatcher.init(this);
-
         TaskDispatcher dispatcher = TaskDispatcher.createInstance();
-
         dispatcher.addTask(new InitAMapTask())
                 .addTask(new InitStethoTask())
                 .addTask(new InitWeexTask())
@@ -59,11 +48,7 @@ public class MyApplication extends Application {
                 .start();
 
         dispatcher.await();
-
-        LaunchTimer.endRecord();
-
         initStrictMode();
-
     }
 
     private void initStrictMode() {

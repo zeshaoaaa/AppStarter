@@ -12,11 +12,33 @@ public abstract class Task implements ITask {
 
     protected String mTag = getClass().getSimpleName().toString();
     protected Context mContext = TaskDispatcher.getContext();
-    protected boolean mIsMainProcess = TaskDispatcher.isMainProcess();// 当前进程是否是主进程
-    private volatile boolean mIsWaiting;// 是否正在等待
-    private volatile boolean mIsRunning;// 是否正在执行
-    private volatile boolean mIsFinished;// Task是否执行完成
-    private volatile boolean mIsSend;// Task是否已经被分发
+
+    /**
+     * 当前进程是否是主进程
+     */
+    protected boolean mIsMainProcess = TaskDispatcher.isMainProcess();
+
+    /**
+     * 是否正在等待
+     */
+    private volatile boolean mIsWaiting;
+
+    /**
+     * 是否正在执行
+     */
+    private volatile boolean mIsRunning;
+
+    /**
+     * Task是否执行完成
+     */
+    private volatile boolean mIsFinished;
+
+    /**
+     * Task是否已经被分发
+     */
+    private volatile boolean mIsSend;
+
+
     private CountDownLatch mDepends = new CountDownLatch(dependsOn() == null ? 0 : dependsOn().size());// 当前Task依赖的Task数量（需要等待被依赖的Task执行完毕才能执行自己），默认没有依赖
 
     /**
@@ -108,8 +130,6 @@ public abstract class Task implements ITask {
 
     /**
      * 是否只在主进程，默认是
-     *
-     * @return
      */
     @Override
     public boolean onlyInMainProcess() {

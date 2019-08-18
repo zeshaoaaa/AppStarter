@@ -5,6 +5,7 @@ import android.os.Process;
 import androidx.core.os.TraceCompat;
 import org.jay.launchstarter.stat.TaskStat;
 import org.jay.launchstarter.utils.DispatcherLog;
+
 /**
  * 任务真正执行的地方
  */
@@ -17,7 +18,8 @@ public class DispatchRunnable implements Runnable {
     public DispatchRunnable(Task task) {
         this.mTask = task;
     }
-    public DispatchRunnable(Task task,TaskDispatcher dispatcher) {
+
+    public DispatchRunnable(Task task, TaskDispatcher dispatcher) {
         this.mTask = task;
         this.mTaskDispatcher = dispatcher;
     }
@@ -53,7 +55,7 @@ public class DispatchRunnable implements Runnable {
 
             TaskStat.markTaskDone();
             mTask.setFinished(true);
-            if(mTaskDispatcher != null){
+            if (mTaskDispatcher != null) {
                 mTaskDispatcher.satisfyChildren(mTask);
                 mTaskDispatcher.markTaskDone(mTask);
             }

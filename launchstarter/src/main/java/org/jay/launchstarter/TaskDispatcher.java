@@ -20,7 +20,6 @@ import java.util.concurrent.atomic.AtomicInteger;
 /**
  * 启动器调用类
  */
-
 public class TaskDispatcher {
     private long mStartTime;
     private static final int WAITTIME = 10000;
@@ -47,6 +46,7 @@ public class TaskDispatcher {
      * 已经结束的Task
      */
     private volatile List<Class<? extends Task>> mFinishedTasks = new ArrayList<>(100);//
+
     private HashMap<Class<? extends Task>, ArrayList<Task>> mDependedHashMap = new HashMap<>();
 
     /**
@@ -146,6 +146,9 @@ public class TaskDispatcher {
         DispatcherLog.i("maintask cost " + (System.currentTimeMillis() - mStartTime));
     }
 
+    /**
+     * 发送去并且执行异步任务
+     */
     private void sendAndExecuteAsyncTasks() {
         for (Task task : mAllTasks) {
             if (task.onlyInMainProcess() && !sIsMainProcess) {
@@ -174,8 +177,6 @@ public class TaskDispatcher {
 
     /**
      * 通知Children一个前置任务已完成
-     *
-     * @param launchTask
      */
     public void satisfyChildren(Task launchTask) {
         ArrayList<Task> arrayList = mDependedHashMap.get(launchTask.getClass());
@@ -195,10 +196,12 @@ public class TaskDispatcher {
         }
     }
 
+    /**
+     * 发送任务
+     */
     private void sendTaskReal(final Task task) {
         if (task.runOnMainThread()) {
             mMainThreadTasks.add(task);
-
             if (task.needCall()) {
                 task.setTaskCallBack(new TaskCallBack() {
                     @Override
@@ -208,7 +211,6 @@ public class TaskDispatcher {
                         satisfyChildren(task);
                         markTaskDone(task);
                         DispatcherLog.i(task.getClass().getSimpleName() + " finish");
-
                         Log.i("testLog", "call");
                     }
                 });
@@ -238,6 +240,9 @@ public class TaskDispatcher {
             }
 
             if (mNeedWaitCount.get() > 0) {
+                if (mCountDownLatch == null) {
+                    throw new RuntimeException("You have to call start() before call await()");
+                }
                 mCountDownLatch.await(WAITTIME, TimeUnit.MILLISECONDS);
             }
         } catch (InterruptedException e) {

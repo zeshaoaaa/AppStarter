@@ -14,7 +14,6 @@ public class TaskStat {
     private static AtomicInteger sTaskDoneCount = new AtomicInteger();
     private static boolean sOpenLaunchStat = false;// 是否开启统计
 
-
     public static String getCurrentSituation() {
         return sCurrentSituation;
     }

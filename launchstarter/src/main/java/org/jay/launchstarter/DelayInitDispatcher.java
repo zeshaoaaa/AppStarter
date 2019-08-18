@@ -6,6 +6,9 @@ import android.os.MessageQueue;
 import java.util.LinkedList;
 import java.util.Queue;
 
+/**
+ * 延迟初始化分发器
+ */
 public class DelayInitDispatcher {
 
     private Queue<Task> mDelayTasks = new LinkedList<>();
