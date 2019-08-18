@@ -49,6 +49,7 @@ public class DispatcherExecutor {
 
     /**
      * 获取CPU线程池
+     *
      * @return
      */
     public static ThreadPoolExecutor getCPUExecutor() {
@@ -57,6 +58,7 @@ public class DispatcherExecutor {
 
     /**
      * 获取IO线程池
+     *
      * @return
      */
     public static ExecutorService getIOExecutor() {
@@ -85,10 +87,12 @@ public class DispatcherExecutor {
             Thread t = new Thread(group, r,
                     namePrefix + threadNumber.getAndIncrement(),
                     0);
-            if (t.isDaemon())
+            if (t.isDaemon()) {
                 t.setDaemon(false);
-            if (t.getPriority() != Thread.NORM_PRIORITY)
+            }
+            if (t.getPriority() != Thread.NORM_PRIORITY) {
                 t.setPriority(Thread.NORM_PRIORITY);
+            }
             return t;
         }
     }

@@ -12,14 +12,6 @@ import org.jay.launchstarterexample.utils.LaunchTimer;
 
 public class MyApplication extends Application {
 
-    public void setDeviceId(String deviceId) {
-        this.mDeviceId = deviceId;
-    }
-
-    public String getDeviceId() {
-        return mDeviceId;
-    }
-
     private String mDeviceId;
     private static Application mApplication;
     private boolean DEV_MODE = true;
@@ -37,13 +29,14 @@ public class MyApplication extends Application {
 
         TaskDispatcher.init(this);
         TaskDispatcher dispatcher = TaskDispatcher.createInstance();
-        dispatcher.addTask(new InitAMapTask())
-                .addTask(new InitStethoTask())
-                .addTask(new InitWeexTask())
-                .addTask(new InitBuglyTask())
-                .addTask(new InitFrescoTask())
+        dispatcher
+                // .addTask(new InitAMapTask())
+                // .addTask(new InitStethoTask())
+                // .addTask(new InitWeexTask())
+                // .addTask(new InitBuglyTask())
+                // .addTask(new InitFrescoTask())
                 .addTask(new InitJPushTask())
-                .addTask(new InitUmengTask())
+                // .addTask(new InitUmengTask())
                 .addTask(new GetDeviceIdTask())
                 .start();
 
@@ -67,6 +60,14 @@ public class MyApplication extends Application {
                     .penaltyLog()
                     .build());
         }
+    }
+
+    public void setDeviceId(String deviceId) {
+        this.mDeviceId = deviceId;
+    }
+
+    public String getDeviceId() {
+        return mDeviceId;
     }
 
     public static Application getApplication() {

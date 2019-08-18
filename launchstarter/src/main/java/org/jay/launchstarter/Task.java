@@ -11,6 +11,7 @@ import java.util.concurrent.ExecutorService;
 public abstract class Task implements ITask {
 
     protected String mTag = getClass().getSimpleName().toString();
+
     protected Context mContext = TaskDispatcher.getContext();
 
     /**
@@ -38,8 +39,8 @@ public abstract class Task implements ITask {
      */
     private volatile boolean mIsSend;
 
-
-    private CountDownLatch mDepends = new CountDownLatch(dependsOn() == null ? 0 : dependsOn().size());// 当前Task依赖的Task数量（需要等待被依赖的Task执行完毕才能执行自己），默认没有依赖
+    // 当前Task依赖的Task数量（需要等待被依赖的Task执行完毕才能执行自己），默认没有依赖
+    private CountDownLatch mDepends = new CountDownLatch(dependsOn() == null ? 0 : dependsOn().size());
 
     /**
      * 当前Task等待，让依赖的Task先执行
