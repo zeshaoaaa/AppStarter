@@ -2,7 +2,7 @@ package org.jay.launchstarterexample.tasks;
 
 
 import com.tencent.bugly.crashreport.CrashReport;
-import org.jay.launchstarter.Task;
+import org.jay.appstarter.Task;
 
 public class InitBuglyTask extends Task {
 

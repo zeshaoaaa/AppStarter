@@ -1,14 +1,9 @@
 package org.jay.launchstarterexample.tasks;
 
-import android.Manifest;
-import android.content.Context;
-import android.content.pm.PackageManager;
 import android.provider.Settings;
-import android.telephony.TelephonyManager;
-import org.jay.launchstarter.Task;
-import org.jay.launchstarterexample.MyApplication;
 
-import static androidx.core.content.PermissionChecker.checkSelfPermission;
+import org.jay.appstarter.Task;
+import org.jay.launchstarterexample.MyApplication;
 
 public class GetDeviceIdTask extends Task {
 

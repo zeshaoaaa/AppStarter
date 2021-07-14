@@ -1,7 +1,7 @@
 package org.jay.launchstarterexample.tasks;
 
 import com.umeng.commonsdk.UMConfigure;
-import org.jay.launchstarter.Task;
+import org.jay.appstarter.Task;
 
 public class InitUmengTask extends Task {
 

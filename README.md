@@ -1,7 +1,2 @@
-这个库的主要代码是慕课网的随风绽放老师的课程[“Android 性能优化”](https://coding.imooc.com/class/308.html)提供的。
-<br>
-<br>
-我只是添加了一些注释、添加了一些单元测试，还有把启动器相关代码从原有的仓库中提取出来，让大家可以参考一下这个启动器的设计。
-<br>
-<br>
-大家如果想进一步了解这个库的设计思想和更多 Android 性能优化相关知识的话，建议大家可以购买随风老师的课程。
+
+Inspired by: [“Android 性能优化”](https://coding.imooc.com/class/308.html)提供的。

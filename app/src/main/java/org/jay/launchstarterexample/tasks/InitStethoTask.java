@@ -3,7 +3,7 @@ package org.jay.launchstarterexample.tasks;
 import android.os.Handler;
 import android.os.Looper;
 import com.facebook.stetho.Stetho;
-import org.jay.launchstarter.Task;
+import org.jay.appstarter.Task;
 
 /**
  * 异步的Task

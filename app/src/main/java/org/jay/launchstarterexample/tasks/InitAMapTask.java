@@ -4,7 +4,7 @@ import com.amap.api.location.AMapLocation;
 import com.amap.api.location.AMapLocationClient;
 import com.amap.api.location.AMapLocationClientOption;
 import com.amap.api.location.AMapLocationListener;
-import org.jay.launchstarter.Task;
+import org.jay.appstarter.Task;
 
 public class InitAMapTask extends Task {
 

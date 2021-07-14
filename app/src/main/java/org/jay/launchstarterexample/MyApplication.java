@@ -4,11 +4,10 @@ import android.app.Application;
 import android.content.Context;
 import android.os.StrictMode;
 import androidx.multidex.MultiDex;
-import com.tencent.mmkv.MMKV;
-import org.jay.launchstarter.TaskDispatcher;
+
+import org.jay.appstarter.TaskDispatcher;
 import org.jay.launchstarterexample.bean.NewsItem;
 import org.jay.launchstarterexample.tasks.*;
-import org.jay.launchstarterexample.utils.LaunchTimer;
 
 public class MyApplication extends Application {
 

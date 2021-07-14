@@ -1,7 +1,7 @@
 package org.jay.launchstarterexample.tasks;
 
 import cn.jpush.android.api.JPushInterface;
-import org.jay.launchstarter.Task;
+import org.jay.appstarter.Task;
 import org.jay.launchstarterexample.MyApplication;
 
 import java.util.ArrayList;

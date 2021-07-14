@@ -1,7 +1,7 @@
 package org.jay.launchstarterexample.utils;
 
 import android.util.Log;
-import org.jay.launchstarter.utils.Utils;
+import org.jay.appstarter.utils.Utils;
 import org.jay.launchstarterexample.MyApplication;
 
 import java.util.concurrent.ExecutorService;

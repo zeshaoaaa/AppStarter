@@ -3,7 +3,7 @@ package org.jay.launchstarterexample.tasks;
 import android.app.Application;
 import com.taobao.weex.InitConfig;
 import com.taobao.weex.WXSDKEngine;
-import org.jay.launchstarter.MainTask;
+import org.jay.appstarter.MainTask;
 
 /**
  * 主线程执行的task

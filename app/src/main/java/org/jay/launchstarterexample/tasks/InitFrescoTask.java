@@ -3,7 +3,7 @@ package org.jay.launchstarterexample.tasks;
 import com.facebook.drawee.backends.pipeline.Fresco;
 import com.facebook.imagepipeline.core.ImagePipelineConfig;
 import com.facebook.imagepipeline.listener.RequestListener;
-import org.jay.launchstarter.Task;
+import org.jay.appstarter.Task;
 import org.jay.launchstarterexample.net.FrescoTraceListener;
 
 import java.util.HashSet;

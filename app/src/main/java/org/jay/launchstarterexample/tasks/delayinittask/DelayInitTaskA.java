@@ -1,7 +1,7 @@
 package org.jay.launchstarterexample.tasks.delayinittask;
 
 
-import org.jay.launchstarter.MainTask;
+import org.jay.appstarter.MainTask;
 import org.jay.launchstarterexample.utils.LogUtils;
 
 public class DelayInitTaskA extends MainTask {
