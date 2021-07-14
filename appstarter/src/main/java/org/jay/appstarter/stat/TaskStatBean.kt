@@ -1,25 +1,6 @@
-package org.jay.appstarter.stat;
+package org.jay.appstarter.stat
 
-class TaskStatBean {
-
-    private String situation;
-
-    private int count;
-
-    public String getSituation() {
-        return situation;
-    }
-
-    public void setSituation(String situation) {
-        this.situation = situation;
-    }
-
-    public int getCount() {
-        return count;
-    }
-
-    public void setCount(int count) {
-        this.count = count;
-    }
-
+internal class TaskStatBean {
+    var situation: String? = null
+    var count = 0
 }

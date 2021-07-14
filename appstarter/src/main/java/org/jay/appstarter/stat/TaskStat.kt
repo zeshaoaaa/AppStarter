@@ -1,44 +1,44 @@
-package org.jay.appstarter.stat;
+package org.jay.appstarter.stat
 
+import org.jay.appstarter.utils.DispatcherLog.i
+import kotlin.jvm.Volatile
+import org.jay.appstarter.stat.TaskStatBean
+import org.jay.appstarter.stat.TaskStat
+import org.jay.appstarter.utils.DispatcherLog
+import java.util.ArrayList
+import java.util.concurrent.atomic.AtomicInteger
 
-import org.jay.appstarter.utils.DispatcherLog;
+object TaskStat {
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.concurrent.atomic.AtomicInteger;
-
-public class TaskStat {
-
-    private static volatile String sCurrentSituation = "";
-    private static List<TaskStatBean> sBeans = new ArrayList<>();
-    private static AtomicInteger sTaskDoneCount = new AtomicInteger();
+    @Volatile
+    private var sCurrentSituation = ""
+    private val sBeans: MutableList<TaskStatBean> = ArrayList()
+    private var sTaskDoneCount = AtomicInteger()
 
     // 是否开启统计
-    private static boolean sOpenLaunchStat = false;
+    private const val sOpenLaunchStat = false
 
-    public static String getCurrentSituation() {
-        return sCurrentSituation;
-    }
-
-    public static void setCurrentSituation(String currentSituation) {
-        if (!sOpenLaunchStat) {
-            return;
+    var currentSituation: String
+        get() = sCurrentSituation
+        set(currentSituation) {
+            if (!sOpenLaunchStat) {
+                return
+            }
+            i("currentSituation   $currentSituation")
+            sCurrentSituation = currentSituation
+            setLaunchStat()
         }
-        DispatcherLog.i("currentSituation   " + currentSituation);
-        sCurrentSituation = currentSituation;
-        setLaunchStat();
+
+    fun markTaskDone() {
+        sTaskDoneCount.getAndIncrement()
     }
 
-    public static void markTaskDone() {
-        sTaskDoneCount.getAndIncrement();
-    }
-
-    public static void setLaunchStat() {
-        TaskStatBean bean = new TaskStatBean();
-        bean.setSituation(sCurrentSituation);
-        bean.setCount(sTaskDoneCount.get());
-        sBeans.add(bean);
-        sTaskDoneCount = new AtomicInteger(0);
+    private fun setLaunchStat() {
+        val bean = TaskStatBean()
+        bean.situation = sCurrentSituation
+        bean.count = sTaskDoneCount.get()
+        sBeans.add(bean)
+        sTaskDoneCount = AtomicInteger(0)
     }
 
 }

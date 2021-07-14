@@ -2,10 +2,8 @@ package org.jay.appstarter
 
 import android.content.Context
 import android.os.Process
-import org.jay.appstarter.TaskDispatcher
 import kotlin.jvm.Volatile
 import org.jay.appstarter.utils.DispatcherExecutor
-import org.jay.appstarter.TaskCallBack
 import java.util.concurrent.CountDownLatch
 import java.util.concurrent.ExecutorService
 
@@ -85,7 +83,7 @@ abstract class Task : ITask {
      * CPU 密集型的一定要切换到 DispatcherExecutor.getCPUExecutor();
      */
     override fun runOn(): ExecutorService {
-        return DispatcherExecutor.getIOExecutor()
+        return DispatcherExecutor.iOExecutor
     }
 
     /**

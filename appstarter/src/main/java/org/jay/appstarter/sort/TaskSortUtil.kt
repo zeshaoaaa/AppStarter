@@ -1,113 +1,113 @@
-package org.jay.appstarter.sort;
+package org.jay.appstarter.sort
 
-import androidx.annotation.NonNull;
-import androidx.collection.ArraySet;
-import org.jay.appstarter.Task;
-import org.jay.appstarter.utils.DispatcherLog;
-
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Set;
+import androidx.collection.ArraySet
+import org.jay.appstarter.Task
+import org.jay.appstarter.utils.DispatcherLog
+import java.util.ArrayList
 
 // 任务排序工具类
-public class TaskSortUtil {
+object TaskSortUtil {
 
-    private static boolean sPrintAllTaskName = false;
+    private const val sPrintAllTaskName = false
 
     // 高优先级的任务
-    private static List<Task> sNewTasksHigh = new ArrayList<>();
+    private val sNewTasksHigh: MutableList<Task> = ArrayList()
 
     /**
      * 任务的有向无环图的拓扑排序
      */
-    public static synchronized List<Task> getSortResult(List<Task> originTasks,
-                                                        List<Class<? extends Task>> clsLaunchTasks) {
-        long makeTime = System.currentTimeMillis();
-
-        Set<Integer> dependSet = new ArraySet<>();
-        Graph graph = new Graph(originTasks.size());
-        for (int i = 0; i < originTasks.size(); i++) {
-            Task task = originTasks.get(i);
-            if (task.isSend() || task.dependsOn() == null || task.dependsOn().size() == 0) {
-                continue;
+    @Synchronized
+    fun getSortResult(
+        originTasks: List<Task>,
+        clsLaunchTasks: List<Class<out Task>>
+    ): MutableList<Task> {
+        val makeTime = System.currentTimeMillis()
+        val dependSet: MutableSet<Int> = ArraySet()
+        val graph = Graph(originTasks.size)
+        for (i in originTasks.indices) {
+            val task = originTasks[i]
+            val list = task.dependsOn()
+            if (task.isSend || list == null || list.isEmpty()) {
+                continue
             }
-            for (Class cls : task.dependsOn()) {
-                int indexOfDepend = getIndexOfTask(originTasks, clsLaunchTasks, cls);
-                if (indexOfDepend < 0) {
-                    throw new IllegalStateException(task.getClass().getSimpleName() +
-                            " depends on " + cls.getSimpleName() + " can not be found in task list ");
+            for (cls in task.dependsOn()!!) {
+                val indexOfDepend = getIndexOfTask(originTasks, clsLaunchTasks, cls)
+                check(indexOfDepend >= 0) {
+                    task.javaClass.simpleName +
+                            " depends on " + cls.simpleName + " can not be found in task list "
                 }
-                dependSet.add(indexOfDepend);
-                graph.addEdge(indexOfDepend, i);
+                dependSet.add(indexOfDepend)
+                graph.addEdge(indexOfDepend, i)
             }
         }
-        List<Integer> indexList = graph.topologicalSort();
-        List<Task> newTasksAll = getResultTasks(originTasks, dependSet, indexList);
-
-        DispatcherLog.i("task analyse cost makeTime " + (System.currentTimeMillis() - makeTime));
-        printAllTaskName(newTasksAll);
-        return newTasksAll;
+        val indexList: List<Int> = graph.topologicalSort()
+        val newTasksAll = getResultTasks(originTasks, dependSet, indexList)
+        DispatcherLog.i("task analyse cost makeTime " + (System.currentTimeMillis() - makeTime))
+        printAllTaskName(newTasksAll)
+        return newTasksAll
     }
 
-    @NonNull
-    private static List<Task> getResultTasks(List<Task> originTasks,
-                                             Set<Integer> dependSet, List<Integer> indexList) {
-        List<Task> newTasksAll = new ArrayList<>(originTasks.size());
-        List<Task> newTasksDepended = new ArrayList<>();// 被别人依赖的
-        List<Task> newTasksWithOutDepend = new ArrayList<>();// 没有依赖的
-        List<Task> newTasksRunAsSoon = new ArrayList<>();// 需要提升自己优先级的，先执行（这个先是相对于没有依赖的先）
-        for (int index : indexList) {
+    private fun getResultTasks(
+        originTasks: List<Task>,
+        dependSet: Set<Int>, indexList: List<Int>
+    ): MutableList<Task> {
+        val newTasksAll: MutableList<Task> = ArrayList(originTasks.size)
+        val newTasksDepended: MutableList<Task> = ArrayList() // 被别人依赖的
+        val newTasksWithOutDepend: MutableList<Task> = ArrayList() // 没有依赖的
+        val newTasksRunAsSoon: MutableList<Task> = ArrayList() // 需要提升自己优先级的，先执行（这个先是相对于没有依赖的先）
+        for (index in indexList) {
             if (dependSet.contains(index)) {
-                newTasksDepended.add(originTasks.get(index));
+                newTasksDepended.add(originTasks[index])
             } else {
-                Task task = originTasks.get(index);
+                val task = originTasks[index]
                 if (task.needRunAsSoon()) {
-                    newTasksRunAsSoon.add(task);
+                    newTasksRunAsSoon.add(task)
                 } else {
-                    newTasksWithOutDepend.add(task);
+                    newTasksWithOutDepend.add(task)
                 }
             }
         }
 
         // 顺序：被别人依赖的————》需要提升自己优先级的————》需要被等待的————》没有依赖的
-        sNewTasksHigh.addAll(newTasksDepended);
-        sNewTasksHigh.addAll(newTasksRunAsSoon);
-        newTasksAll.addAll(sNewTasksHigh);
-        newTasksAll.addAll(newTasksWithOutDepend);
-        return newTasksAll;
+        sNewTasksHigh.addAll(newTasksDepended)
+        sNewTasksHigh.addAll(newTasksRunAsSoon)
+        newTasksAll.addAll(sNewTasksHigh)
+        newTasksAll.addAll(newTasksWithOutDepend)
+        return newTasksAll
     }
 
-    private static void printAllTaskName(List<Task> newTasksAll) {
+    private fun printAllTaskName(newTasksAll: List<Task>) {
         if (!sPrintAllTaskName) {
-            return;
+            return
         }
-        for (Task task : newTasksAll) {
-            DispatcherLog.i(task.getClass().getSimpleName());
+        for (task in newTasksAll) {
+            DispatcherLog.i(task.javaClass.simpleName)
         }
     }
 
-    public static List<Task> getTasksHigh() {
-        return sNewTasksHigh;
-    }
+    val tasksHigh: List<Task>
+        get() = sNewTasksHigh
 
     /**
      * 获取任务在任务列表中的下标
      */
-    private static int getIndexOfTask(List<Task> originTasks,
-                                      List<Class<? extends Task>> clsLaunchTasks,
-                                      Class cls) {
-        int index = clsLaunchTasks.indexOf(cls);
+    private fun getIndexOfTask(
+        originTasks: List<Task>,
+        clsLaunchTasks: List<Class<out Task>>,
+        cls: Class<*>
+    ): Int {
+        val index = clsLaunchTasks.indexOf(cls)
         if (index >= 0) {
-            return index;
+            return index
         }
 
         // 仅仅是保护性代码
-        final int size = originTasks.size();
-        for (int i = 0; i < size; i++) {
-            if (cls.getSimpleName().equals(originTasks.get(i).getClass().getSimpleName())) {
-                return i;
+        val size = originTasks.size
+        for (i in 0 until size) {
+            if (cls.simpleName == originTasks[i].javaClass.simpleName) {
+                return i
             }
         }
-        return index;
+        return index
     }
 }

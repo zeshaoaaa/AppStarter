@@ -69,15 +69,14 @@ class TaskDispatcher private constructor() {
      * 添加任务
      */
     fun addTask(task: Task?): TaskDispatcher {
-        if (task != null) {
-            collectDepends(task)
-            mAllTasks.add(task)
-            mClsAllTasks.add(task.javaClass)
-            // 非主线程且需要wait的，主线程不需要CountDownLatch也是同步的
-            if (needWait(task)) {
-                mNeedWaitTasks.add(task)
-                mNeedWaitCount.getAndIncrement()
-            }
+        if (task == null) return this
+        collectDepends(task)
+        mAllTasks.add(task)
+        mClsAllTasks.add(task.javaClass)
+        // 非主线程且需要wait的，主线程不需要CountDownLatch也是同步的
+        if (needWait(task)) {
+            mNeedWaitTasks.add(task)
+            mNeedWaitCount.getAndIncrement()
         }
         return this
     }
@@ -211,14 +210,17 @@ class TaskDispatcher private constructor() {
             // 把任务添加到组线程任务列表中
             mMainThreadTasks.add(task)
             if (task.needCall()) {
-                task.setTaskCallBack {
-                    TaskStat.markTaskDone()
-                    task.isFinished = true
-                    satisfyChildren(task)
-                    markTaskDone(task)
-                    DispatcherLog.i(task.javaClass.simpleName + " finish")
-                    Log.i("testLog", "call")
-                }
+                task.setTaskCallBack(object : TaskCallBack {
+                    override fun call() {
+                        TaskStat.markTaskDone()
+                        task.isFinished = true
+                        satisfyChildren(task)
+                        markTaskDone(task)
+                        DispatcherLog.i(task.javaClass.simpleName + " finish")
+                        Log.i("testLog", "call")
+                    }
+
+                })
             }
             return
         }

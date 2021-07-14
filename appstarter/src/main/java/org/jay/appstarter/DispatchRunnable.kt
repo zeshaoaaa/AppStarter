@@ -17,7 +17,7 @@ class DispatchRunnable(private val mTask : Task,
         Trace.beginSection(mTask.javaClass.simpleName)
         DispatcherLog.i(
             mTask.javaClass.simpleName
-                    + " begin run" + "  Situation  " + TaskStat.getCurrentSituation()
+                    + " begin run" + "  Situation  " + TaskStat.currentSituation
         )
         Process.setThreadPriority(mTask.priority())
         var startTime = System.currentTimeMillis()
@@ -56,7 +56,7 @@ class DispatchRunnable(private val mTask : Task,
                         + "  needWait " + (mTask.needWait() || Looper.getMainLooper() == Looper.myLooper())
                         + "  ThreadId " + Thread.currentThread().id
                         + "  ThreadName " + Thread.currentThread().name
-                        + "  Situation  " + TaskStat.getCurrentSituation()
+                        + "  Situation  " + TaskStat.currentSituation
             )
         }
     }
