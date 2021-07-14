@@ -1,23 +1,23 @@
-package org.jay.appstarter.sort;
+package org.jay.appstarter.sort
 
-import java.util.*;
+import java.util.*
 
 /**
  * 有向无环图的拓扑排序算法
  */
-public class Graph {
+class Graph(
 
     // 顶点数
-    private int mVerticalCount;
+    private val mVerticalCount: Int
+
+) {
 
     // 邻接表
-    private List<Integer>[] mAdj;
+    private val mAdj: Array<MutableList<Int>?> = arrayOfNulls(mVerticalCount)
 
-    public Graph(int verticalCount) {
-        this.mVerticalCount = verticalCount;
-        mAdj = new ArrayList[mVerticalCount];
-        for (int i = 0; i < mVerticalCount; i++) {
-            mAdj[i] = new ArrayList<Integer>();
+    init {
+        for (i in 0 until mVerticalCount) {
+            mAdj[i] = ArrayList<Int>()
         }
     }
 
@@ -27,49 +27,58 @@ public class Graph {
      * @param u from
      * @param v to
      */
-    public void addEdge(int u, int v) {
-        mAdj[u].add(v);
+    fun addEdge(u: Int, v: Int) {
+        mAdj[u]?.add(v)
     }
 
     /**
      * 拓扑排序
      */
-    public Vector<Integer> topologicalSort() {
-        int indegree[] = new int[mVerticalCount];
-        for (int i = 0; i < mVerticalCount; i++) {//初始化所有点的入度数量
-            ArrayList<Integer> temp = (ArrayList<Integer>) mAdj[i];
-            for (int node : temp) {
-                indegree[node]++;
+    fun topologicalSort(): Vector<Int> {
+
+        val indegree = IntArray(mVerticalCount)
+
+        //初始化所有点的入度数量
+        for (i in 0 until mVerticalCount) {
+            val temp = mAdj[i] as ArrayList<Int>
+            for (node in temp) {
+                indegree[node]++
             }
         }
-        Queue<Integer> queue = new LinkedList<Integer>();
-        for (int i = 0; i < mVerticalCount; i++) {//找出所有入度为0的点
+
+        val queue: Queue<Int> = LinkedList()
+
+        //找出所有入度为0的点
+        for (i in 0 until mVerticalCount) {
             if (indegree[i] == 0) {
-                queue.add(i);
+                queue.add(i)
             }
         }
-        int cnt = 0;
-        Vector<Integer> topOrder = new Vector<Integer>();
+        var cnt = 0
+        val topOrder = Vector<Int>()
         while (!queue.isEmpty()) {
-            int u = queue.poll();
-            topOrder.add(u);
+            val u = queue.poll()
+            topOrder.add(u)
+
+            val list = mAdj[u] ?: continue
 
             // 找到该点（入度为0）的所有邻接点
-            for (int node : mAdj[u]) {
+            for (node in list) {
+
                 // //把这个点的入度减一，如果入度变成了0，那么添加到入度0的队列里
                 if (--indegree[node] == 0) {
+
                     // 添加节点到队列中
-                    queue.add(node);
+                    queue.add(node)
                 }
             }
-            cnt++;
+            cnt++
         }
 
         // 检查是否有环，理论上拿出来的点的次数和点的数量应该一致，如果不一致，说明有环
-        if (cnt != mVerticalCount) {
-            throw new IllegalStateException("Exists a cycle in the graph");
-        }
-        return topOrder;
+        check(cnt == mVerticalCount) { "Exists a cycle in the graph" }
+        return topOrder
     }
+
 
 }

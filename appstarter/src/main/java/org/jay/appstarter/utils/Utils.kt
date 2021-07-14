@@ -1,73 +1,91 @@
-package org.jay.appstarter.utils;
+package org.jay.appstarter.utils
 
-import android.app.ActivityManager;
-import android.content.Context;
-import android.text.TextUtils;
+import android.text.TextUtils
+import android.app.ActivityManager
+import android.app.ActivityManager.RunningAppProcessInfo
+import android.content.Context
+import android.os.Process
+import java.io.BufferedReader
+import java.io.FileInputStream
+import java.io.InputStreamReader
+import java.lang.Exception
+import java.lang.StringBuilder
 
-import java.io.BufferedReader;
-import java.io.FileInputStream;
-import java.io.InputStreamReader;
+object Utils {
 
-public class Utils {
+    /**
+     * 当前进程名称
+     */
+    private var sCurProcessName: String? = null
 
-    private static String sCurProcessName = null;
-
-    public static boolean isMainProcess(Context context) {
-        String processName = getCurProcessName(context);
-        if (processName != null && processName.contains(":")) {
-            return false;
-        }
-        return (processName != null && processName.equals(context.getPackageName()));
+    /**
+     * 是否为主进程
+     */
+    fun isMainProcess(context: Context?): Boolean {
+        if (context == null) return false
+        val processName = getCurProcessName(context)
+        return if (processName != null && processName.contains(":")) {
+            false
+        } else processName != null && processName == context.packageName
     }
 
-    // 获取当前进程名
-    public static String getCurProcessName(Context context) {
-        String processName = sCurProcessName;
+    /**
+     * 获取当前进程名
+     */
+    private fun getCurProcessName(context: Context?): String? {
+        if (context == null) return null
+        val processName = sCurProcessName
         if (!TextUtils.isEmpty(processName)) {
-            return processName;
+            return processName
         }
         try {
-            int pid = android.os.Process.myPid();
-            ActivityManager mActivityManager = (ActivityManager) context.getSystemService(Context.ACTIVITY_SERVICE);
-            for (ActivityManager.RunningAppProcessInfo appProcess : mActivityManager.getRunningAppProcesses()) {
+            val pid = Process.myPid()
+            val mActivityManager =
+                context.getSystemService(Context.ACTIVITY_SERVICE) as ActivityManager
+            for (appProcess in mActivityManager.runningAppProcesses) {
                 if (appProcess.pid == pid) {
-                    sCurProcessName = appProcess.processName;
-                    return sCurProcessName;
+                    sCurProcessName = appProcess.processName
+                    return sCurProcessName
                 }
             }
-        } catch (Exception e) {
-            e.printStackTrace();
+        } catch (e: Exception) {
+            e.printStackTrace()
         }
-        sCurProcessName = getCurProcessNameFromProc();
-        return sCurProcessName;
+        sCurProcessName = curProcessNameFromProc
+        return sCurProcessName
     }
 
     // 获取当前进程名
-    private static String getCurProcessNameFromProc() {
-        BufferedReader cmdlineReader = null;
-        try {
-            cmdlineReader = new BufferedReader(new InputStreamReader(
-                    new FileInputStream(
-                            "/proc/" + android.os.Process.myPid() + "/cmdline"),
-                    "iso-8859-1"));
-            int c;
-            StringBuilder processName = new StringBuilder();
-            while ((c = cmdlineReader.read()) > 0) {
-                processName.append((char) c);
-            }
-            return processName.toString();
-        } catch (Throwable e) {
-            // ignore
-        } finally {
-            if (cmdlineReader != null) {
-                try {
-                    cmdlineReader.close();
-                } catch (Exception e) {
-                    // ignore
+    private val curProcessNameFromProc: String?
+        get() {
+            var cmdlineReader: BufferedReader? = null
+            try {
+                cmdlineReader = BufferedReader(
+                    InputStreamReader(
+                        FileInputStream(
+                            "/proc/" + Process.myPid() + "/cmdline"
+                        ),
+                        "iso-8859-1"
+                    )
+                )
+                var c: Int
+                val processName = StringBuilder()
+                while (cmdlineReader.read().also { c = it } > 0) {
+                    processName.append(c.toChar())
+                }
+                return processName.toString()
+            } catch (e: Throwable) {
+                // ignore
+            } finally {
+                if (cmdlineReader != null) {
+                    try {
+                        cmdlineReader.close()
+                    } catch (e: Exception) {
+                        // ignore
+                    }
                 }
             }
+            return null
         }
-        return null;
-    }
 
 }

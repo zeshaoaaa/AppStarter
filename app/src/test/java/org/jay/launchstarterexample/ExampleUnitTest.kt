@@ -1,4 +1,4 @@
-package org.jay.launchstarterexample
+package org.jay.appstarterexample
 
 import org.junit.Test
 

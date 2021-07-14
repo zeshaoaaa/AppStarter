@@ -1,86 +1,63 @@
-package org.jay.appstarter;
+package org.jay.appstarter
 
-import android.os.Looper;
-import android.os.Process;
-import androidx.core.os.TraceCompat;
-import org.jay.appstarter.stat.TaskStat;
-import org.jay.appstarter.utils.DispatcherLog;
+import org.jay.appstarter.utils.DispatcherLog.isDebug
+import org.jay.appstarter.stat.TaskStat
+import android.os.Looper
+import android.os.Process
+import android.os.Trace
+import org.jay.appstarter.utils.DispatcherLog
 
 /**
  * 任务真正执行的地方
  */
+class DispatchRunnable(private val mTask : Task,
+                       private val mTaskDispatcher: TaskDispatcher) : Runnable {
 
-public class DispatchRunnable implements Runnable {
-
-    private Task mTask;
-    private TaskDispatcher mTaskDispatcher;
-
-    public DispatchRunnable(Task task) {
-        this.mTask = task;
-    }
-
-    public DispatchRunnable(Task task, TaskDispatcher dispatcher) {
-        this.mTask = task;
-        this.mTaskDispatcher = dispatcher;
-    }
-
-    @Override
-    public void run() {
-        TraceCompat.beginSection(mTask.getClass().getSimpleName());
-        DispatcherLog.i(mTask.getClass().getSimpleName()
-                + " begin run" + "  Situation  " + TaskStat.getCurrentSituation());
-
-        Process.setThreadPriority(mTask.priority());
-
-        long startTime = System.currentTimeMillis();
-
-        mTask.setWaiting(true);
-        mTask.waitToSatisfy();
-
-        long waitTime = System.currentTimeMillis() - startTime;
-        startTime = System.currentTimeMillis();
+    override fun run() {
+        Trace.beginSection(mTask.javaClass.simpleName)
+        DispatcherLog.i(
+            mTask.javaClass.simpleName
+                    + " begin run" + "  Situation  " + TaskStat.getCurrentSituation()
+        )
+        Process.setThreadPriority(mTask.priority())
+        var startTime = System.currentTimeMillis()
+        mTask.isWaiting = true
+        mTask.waitToSatisfy()
+        val waitTime = System.currentTimeMillis() - startTime
+        startTime = System.currentTimeMillis()
 
         // 执行Task
-        mTask.setRunning(true);
-        mTask.run();
+        mTask.isRunning = true
+        mTask.run()
 
         // 执行Task的尾部任务
-        Runnable tailRunnable = mTask.getTailRunnable();
-        if (tailRunnable != null) {
-            tailRunnable.run();
-        }
-
+        val tailRunnable = mTask.getTailRunnable()
+        tailRunnable?.run()
         if (!mTask.needCall() || !mTask.runOnMainThread()) {
-            printTaskLog(startTime, waitTime);
-
-            TaskStat.markTaskDone();
-            mTask.setFinished(true);
-            if (mTaskDispatcher != null) {
-                mTaskDispatcher.satisfyChildren(mTask);
-                mTaskDispatcher.markTaskDone(mTask);
-            }
-            DispatcherLog.i(mTask.getClass().getSimpleName() + " finish");
+            printTaskLog(startTime, waitTime)
+            TaskStat.markTaskDone()
+            mTask.isFinished = true
+            mTaskDispatcher.satisfyChildren(mTask)
+            mTaskDispatcher.markTaskDone(mTask)
+            DispatcherLog.i(mTask.javaClass.simpleName + " finish")
         }
-        TraceCompat.endSection();
+        Trace.endSection()
     }
 
     /**
      * 打印出来Task执行的日志
-     *
-     * @param startTime
-     * @param waitTime
      */
-    private void printTaskLog(long startTime, long waitTime) {
-        long runTime = System.currentTimeMillis() - startTime;
-        if (DispatcherLog.isDebug()) {
-            DispatcherLog.i(mTask.getClass().getSimpleName() + "  wait " + waitTime + "    run "
-                    + runTime + "   isMain " + (Looper.getMainLooper() == Looper.myLooper())
-                    + "  needWait " + (mTask.needWait() || (Looper.getMainLooper() == Looper.myLooper()))
-                    + "  ThreadId " + Thread.currentThread().getId()
-                    + "  ThreadName " + Thread.currentThread().getName()
-                    + "  Situation  " + TaskStat.getCurrentSituation()
-            );
+    private fun printTaskLog(startTime: Long, waitTime: Long) {
+        val runTime = System.currentTimeMillis() - startTime
+        if (isDebug) {
+            DispatcherLog.i(
+                mTask.javaClass.simpleName + "  wait " + waitTime + "    run "
+                        + runTime + "   isMain " + (Looper.getMainLooper() == Looper.myLooper())
+                        + "  needWait " + (mTask.needWait() || Looper.getMainLooper() == Looper.myLooper())
+                        + "  ThreadId " + Thread.currentThread().id
+                        + "  ThreadName " + Thread.currentThread().name
+                        + "  Situation  " + TaskStat.getCurrentSituation()
+            )
         }
     }
-
 }

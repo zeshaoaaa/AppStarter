@@ -21,6 +21,6 @@ public class ExampleInstrumentedTest {
         // Context of the app under test.
         Context appContext = InstrumentationRegistry.getTargetContext();
 
-        assertEquals("org.jay.launchstarter.test", appContext.getPackageName());
+        assertEquals("org.jay.appstarter.test", appContext.getPackageName());
     }
 }

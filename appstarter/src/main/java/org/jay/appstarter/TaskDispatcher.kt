@@ -1,224 +1,182 @@
-package org.jay.appstarter;
+package org.jay.appstarter
 
-import android.content.Context;
-import android.os.Looper;
-import android.util.Log;
-import androidx.annotation.UiThread;
-import org.jay.appstarter.sort.TaskSortUtil;
-import org.jay.appstarter.stat.TaskStat;
-import org.jay.appstarter.utils.DispatcherLog;
-import org.jay.appstarter.utils.Utils;
-
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.concurrent.CountDownLatch;
-import java.util.concurrent.Future;
-import java.util.concurrent.TimeUnit;
-import java.util.concurrent.atomic.AtomicInteger;
+import android.content.Context
+import kotlin.jvm.Volatile
+import androidx.annotation.UiThread
+import android.os.Looper
+import android.util.Log
+import org.jay.appstarter.sort.TaskSortUtil
+import org.jay.appstarter.stat.TaskStat
+import org.jay.appstarter.utils.DispatcherLog
+import org.jay.appstarter.utils.Utils
+import java.lang.RuntimeException
+import java.util.ArrayList
+import java.util.HashMap
+import java.util.concurrent.CountDownLatch
+import java.util.concurrent.Future
+import java.util.concurrent.TimeUnit
+import java.util.concurrent.atomic.AtomicInteger
 
 /**
  * 任务分发器
  */
-public class TaskDispatcher {
-
+class TaskDispatcher private constructor() {
     /**
      * 开始时间
      */
-    private long mStartTime;
+    private var mStartTime: Long = 0
 
-    /**
-     * 等待时间
-     */
-    private static final int WAITTIME = 10 * 1000;
-
-    private static Context sContext;
-
-    /**
-     * 是否在主进程
-     */
-    private static boolean sIsMainProcess;
-
-    private List<Future> mFutures = new ArrayList<>();
-
-    /**
-     * 是否初始化
-     */
-    private static volatile boolean sHasInit;
+    private val mFutures: MutableList<Future<*>> = ArrayList()
 
     /**
      * 全部任务
      */
-    private List<Task> mAllTasks = new ArrayList<>();
-
-    private List<Class<? extends Task>> mClsAllTasks = new ArrayList<>();
+    private var mAllTasks: MutableList<Task> = ArrayList()
+    private val mClsAllTasks: MutableList<Class<out Task>> = ArrayList()
 
     /**
      * 主线程任务
      */
-    private volatile List<Task> mMainThreadTasks = new ArrayList<>();
+    @Volatile
+    private var mMainThreadTasks: MutableList<Task> = ArrayList()
 
-    private CountDownLatch mCountDownLatch;
+    private var mCountDownLatch: CountDownLatch? = null
 
     /**
      * 需要等待的任务数
      */
-    private AtomicInteger mNeedWaitCount = new AtomicInteger();//
+    private val mNeedWaitCount = AtomicInteger() //
 
     /**
      * 调用了 await 还没结束且需要等待的任务列表
      */
-    private List<Task> mNeedWaitTasks = new ArrayList<>();
+    private val mNeedWaitTasks: MutableList<Task> = ArrayList()
 
     /**
      * 已经结束的Task
      */
-    private volatile List<Class<? extends Task>> mFinishedTasks = new ArrayList<>(100);//
+    @Volatile
+    private var mFinishedTasks: MutableList<Class<out Task>> = ArrayList(100) //
 
-    private HashMap<Class<? extends Task>, ArrayList<Task>> mDependedHashMap = new HashMap<>();
+    private val mDependedHashMap = HashMap<Class<out Task>, ArrayList<Task>>()
 
     /**
      * 启动器分析的次数，统计下分析的耗时；
      */
-    private AtomicInteger mAnalyseCount = new AtomicInteger();
-
-    private TaskDispatcher() {
-    }
-
-    /**
-     * 初始化任务分发器
-     */
-    public static void init(Context context) {
-        if (context != null) {
-            sContext = context;
-            sHasInit = true;
-            sIsMainProcess = Utils.isMainProcess(sContext);
-        }
-    }
-
-    /**
-     * 注意：每次获取的都是新对象
-     */
-    public static TaskDispatcher createInstance() {
-        if (!sHasInit) {
-            throw new RuntimeException("must call TaskDispatcher.init first");
-        }
-        return new TaskDispatcher();
-    }
+    private val mAnalyseCount = AtomicInteger()
 
     /**
      * 添加任务
      */
-    public TaskDispatcher addTask(Task task) {
+    fun addTask(task: Task?): TaskDispatcher {
         if (task != null) {
-            collectDepends(task);
-            mAllTasks.add(task);
-            mClsAllTasks.add(task.getClass());
+            collectDepends(task)
+            mAllTasks.add(task)
+            mClsAllTasks.add(task.javaClass)
             // 非主线程且需要wait的，主线程不需要CountDownLatch也是同步的
             if (needWait(task)) {
-                mNeedWaitTasks.add(task);
-                mNeedWaitCount.getAndIncrement();
+                mNeedWaitTasks.add(task)
+                mNeedWaitCount.getAndIncrement()
             }
         }
-        return this;
+        return this
     }
 
     /**
      * 收集依赖
      */
-    private void collectDepends(Task task) {
-        List<Class<? extends Task>> dependsOn = task.dependsOn();
+    private fun collectDepends(task: Task) {
+        val dependsOn = task.dependsOn()
         if (dependsOn == null || dependsOn.isEmpty()) {
-            return;
+            return
         }
-        for (Class<? extends Task> cls : dependsOn) {
+        for (cls in dependsOn) {
             // 根据不同的任务类型获取不同的任务列表
-            ArrayList<Task> tasks = mDependedHashMap.get(cls);
-
+            var tasks = mDependedHashMap[cls]
             if (tasks == null) {
-                tasks = new ArrayList<>();
-                mDependedHashMap.put(cls, tasks);
+                tasks = ArrayList()
+                mDependedHashMap[cls] = tasks
             }
-
-            tasks.add(task);
+            tasks.add(task)
 
             // 该类已经在已结束任务列表中
             if (mFinishedTasks.contains(cls)) {
-                task.satisfy();
+                task.satisfy()
             }
         }
     }
 
-    private boolean needWait(Task task) {
+    private fun needWait(task: Task): Boolean {
         // 如果任务不是运行在主线程，并且任务自己设定了不需要等待，那就不需要等待
-        return !task.runOnMainThread() && task.needWait();
+        return !task.runOnMainThread() && task.needWait()
     }
 
     @UiThread
-    public void start() {
-        mStartTime = System.currentTimeMillis();
+    fun start() {
+        mStartTime = System.currentTimeMillis()
         if (Looper.getMainLooper() != Looper.myLooper()) {
-            throw new RuntimeException("must be called from UiThread");
+            throw RuntimeException("must be called from UiThread")
         }
-        if (mAllTasks.size() > 0) {
-            mAnalyseCount.getAndIncrement();
-            printDependedMsg();
-            mAllTasks = TaskSortUtil.getSortResult(mAllTasks, mClsAllTasks);
-            mCountDownLatch = new CountDownLatch(mNeedWaitCount.get());
+        if (mAllTasks.size > 0) {
+            mAnalyseCount.getAndIncrement()
+            printDependedMsg()
+            mAllTasks = TaskSortUtil.getSortResult(mAllTasks, mClsAllTasks)
+            mCountDownLatch = CountDownLatch(mNeedWaitCount.get())
 
             // 发送并执行异步任务
-            sendAndExecuteAsyncTasks();
-
-            DispatcherLog.i("task analyse cost " + (System.currentTimeMillis() - mStartTime) + "  begin main ");
-            executeTaskMain();
+            sendAndExecuteAsyncTasks()
+            DispatcherLog.i("task analyse cost " + (System.currentTimeMillis() - mStartTime) + "  begin main ")
+            executeTaskMain()
         }
-        DispatcherLog.i("task analyse cost startTime cost " + (System.currentTimeMillis() - mStartTime));
+        DispatcherLog.i("task analyse cost startTime cost " + (System.currentTimeMillis() - mStartTime))
     }
 
     /**
      * 取消任务
      */
-    public void cancel() {
-        for (Future future : mFutures) {
-            future.cancel(true);
+    fun cancel() {
+        for (future in mFutures) {
+            future.cancel(true)
         }
     }
 
-    private void executeTaskMain() {
-        mStartTime = System.currentTimeMillis();
-        for (Task task : mMainThreadTasks) {
-            long time = System.currentTimeMillis();
-            new DispatchRunnable(task,this).run();
-            DispatcherLog.i("real main " + task.getClass().getSimpleName() + " cost   " +
-                    (System.currentTimeMillis() - time));
+    private fun executeTaskMain() {
+        mStartTime = System.currentTimeMillis()
+        for (task in mMainThreadTasks) {
+            val time = System.currentTimeMillis()
+            DispatchRunnable(task, this).run()
+            DispatcherLog.i(
+                "real main " + task.javaClass.simpleName + " cost   " +
+                        (System.currentTimeMillis() - time)
+            )
         }
-        DispatcherLog.i("maintask cost " + (System.currentTimeMillis() - mStartTime));
+        DispatcherLog.i("maintask cost " + (System.currentTimeMillis() - mStartTime))
     }
 
     /**
      * 发送去并且执行异步任务
      */
-    private void sendAndExecuteAsyncTasks() {
-        for (Task task : mAllTasks) {
-            if (task.onlyInMainProcess() && !sIsMainProcess) {
-                markTaskDone(task);
+    private fun sendAndExecuteAsyncTasks() {
+        for (task in mAllTasks) {
+            if (task.onlyInMainProcess() && !isMainProcess) {
+                markTaskDone(task)
             } else {
-                sendTaskReal(task);
+                sendTaskReal(task)
             }
-            task.setSend(true);
+            task.isSend = true
         }
     }
 
     /**
      * 查看被依赖的信息
      */
-    private void printDependedMsg() {
-        DispatcherLog.i("needWait size : " + (mNeedWaitCount.get()));
-        if (false) {
-            for (Class<? extends Task> cls : mDependedHashMap.keySet()) {
-                DispatcherLog.i("cls " + cls.getSimpleName() + "   " + mDependedHashMap.get(cls).size());
-                for (Task task : mDependedHashMap.get(cls)) {
-                    DispatcherLog.i("cls       " + task.getClass().getSimpleName());
+    private fun printDependedMsg() {
+        DispatcherLog.i("needWait size : " + mNeedWaitCount.get())
+        if (DispatcherLog.isDebug) {
+            for (cls in mDependedHashMap.keys) {
+                DispatcherLog.i("cls " + cls.simpleName + "   " + mDependedHashMap[cls]!!.size)
+                for (task in mDependedHashMap[cls]!!) {
+                    DispatcherLog.i("cls       " + task.javaClass.simpleName)
                 }
             }
         }
@@ -227,88 +185,126 @@ public class TaskDispatcher {
     /**
      * 通知Children一个前置任务已完成
      */
-    public void satisfyChildren(Task launchTask) {
-        ArrayList<Task> arrayList = mDependedHashMap.get(launchTask.getClass());
-        if (arrayList != null && arrayList.size() > 0) {
-            for (Task task : arrayList) {
-                task.satisfy();
+    fun satisfyChildren(launchTask: Task) {
+        val arrayList = mDependedHashMap[launchTask.javaClass]
+        if (arrayList != null && arrayList.size > 0) {
+            for (task in arrayList) {
+                task.satisfy()
             }
         }
     }
 
-    public void markTaskDone(Task task) {
+    fun markTaskDone(task: Task) {
         if (needWait(task)) {
-            mFinishedTasks.add(task.getClass());
-            mNeedWaitTasks.remove(task);
-            mCountDownLatch.countDown();
-            mNeedWaitCount.getAndDecrement();
+            mFinishedTasks.add(task.javaClass)
+            mNeedWaitTasks.remove(task)
+            mCountDownLatch!!.countDown()
+            mNeedWaitCount.getAndDecrement()
         }
     }
 
     /**
      * 发送任务
      */
-    private void sendTaskReal(final Task task) {
+    private fun sendTaskReal(task: Task) {
         if (task.runOnMainThread()) {
-            mMainThreadTasks.add(task);
+            // 把任务添加到组线程任务列表中
+            mMainThreadTasks.add(task)
             if (task.needCall()) {
-                task.setTaskCallBack(new TaskCallBack() {
-                    @Override
-                    public void call() {
-                        TaskStat.markTaskDone();
-                        task.setFinished(true);
-                        satisfyChildren(task);
-                        markTaskDone(task);
-                        DispatcherLog.i(task.getClass().getSimpleName() + " finish");
-                        Log.i("testLog", "call");
-                    }
-                });
+                task.setTaskCallBack {
+                    TaskStat.markTaskDone()
+                    task.isFinished = true
+                    satisfyChildren(task)
+                    markTaskDone(task)
+                    DispatcherLog.i(task.javaClass.simpleName + " finish")
+                    Log.i("testLog", "call")
+                }
             }
-        } else {
-            // 提交任务
-            Future future = task.runOn().submit(new DispatchRunnable(task,this));
-            mFutures.add(future);
+            return
         }
+
+        // 提交任务
+        val future = task.runOn().submit(DispatchRunnable(task, this))
+        mFutures.add(future)
+
     }
 
     /**
      * 执行任务
      */
-    public void executeTask(Task task) {
+    fun executeTask(task: Task) {
         if (needWait(task)) {
-            mNeedWaitCount.getAndIncrement();
+            mNeedWaitCount.getAndIncrement()
         }
         // 执行任务
-        task.runOn().execute(new DispatchRunnable(task,this));
+        task.runOn().execute(DispatchRunnable(task, this))
     }
 
     @UiThread
-    public void await() {
+    fun await() {
         try {
-            if (DispatcherLog.isDebug()) {
-                DispatcherLog.i("still has " + mNeedWaitCount.get());
-                for (Task task : mNeedWaitTasks) {
-                    DispatcherLog.i("needWait: " + task.getClass().getSimpleName());
+            if (DispatcherLog.isDebug) {
+                DispatcherLog.i("still has " + mNeedWaitCount.get())
+                for (task in mNeedWaitTasks) {
+                    DispatcherLog.i("needWait: " + task.javaClass.simpleName)
                 }
             }
-
             if (mNeedWaitCount.get() > 0) {
                 if (mCountDownLatch == null) {
-                    throw new RuntimeException("You have to call start() before call await()");
+                    throw RuntimeException("You have to call start() before call await()")
                 }
-                mCountDownLatch.await(WAITTIME, TimeUnit.MILLISECONDS);
+                // 等待 10 秒
+                mCountDownLatch?.await(WAIT_TIME.toLong(), TimeUnit.MILLISECONDS)
             }
-        } catch (InterruptedException e) {
-
+        } catch (e: InterruptedException) {
         }
     }
 
-    public static Context getContext() {
-        return sContext;
-    }
+    companion object {
 
-    public static boolean isMainProcess() {
-        return sIsMainProcess;
+        /**
+         * 等待时间
+         */
+        private const val WAIT_TIME = 10 * 1000
+
+        /**
+         * Application Context
+         */
+        lateinit var context: Context
+
+        /**
+         * 是否在主进程
+         */
+        var isMainProcess = false
+            private set
+
+        /**
+         * 是否初始化
+         */
+        @Volatile
+        private var sHasInit = false
+
+        /**
+         * 初始化任务分发器
+         */
+        @JvmStatic
+        fun init(context: Context) {
+            Companion.context = context
+            sHasInit = true
+            isMainProcess = Utils.isMainProcess(Companion.context)
+        }
+
+        /**
+         * 注意：每次获取的都是新对象
+         */
+        @JvmStatic
+        fun createInstance(): TaskDispatcher {
+            if (!sHasInit) {
+                throw RuntimeException("must call TaskDispatcher.init first")
+            }
+            return TaskDispatcher()
+        }
+
     }
 
 }

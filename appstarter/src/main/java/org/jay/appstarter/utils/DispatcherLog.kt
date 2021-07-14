@@ -1,27 +1,20 @@
-package org.jay.appstarter.utils;
+package org.jay.appstarter.utils
 
-import android.util.Log;
-
-import org.jay.appstarter.BuildConfig;
+import android.util.Log
+import org.jay.appstarter.BuildConfig
+import org.jay.appstarter.utils.DispatcherLog
 
 // 日志打印器
-public class DispatcherLog {
+object DispatcherLog {
 
-    private static boolean sDebug = BuildConfig.DEBUG;
+    var isDebug = BuildConfig.DEBUG
 
-    public static void i(String msg) {
-        if (!sDebug) {
-            return;
+    @JvmStatic
+    fun i(msg: String?) {
+        if (!isDebug) {
+            return
         }
-        Log.i("TaskDispatcher",msg);
-    }
-
-    public static boolean isDebug() {
-        return sDebug;
-    }
-
-    public static void setDebug(boolean debug) {
-        sDebug = debug;
+        Log.i("TaskDispatcher", msg!!)
     }
 
 }

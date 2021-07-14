@@ -1,4 +1,4 @@
-package org.jay.launchstarterexample
+package org.jay.appstarterexample
 
 import androidx.test.InstrumentationRegistry
 import androidx.test.runner.AndroidJUnit4
@@ -19,6 +19,6 @@ class ExampleInstrumentedTest {
     fun useAppContext() {
         // Context of the app under test.
         val appContext = InstrumentationRegistry.getTargetContext()
-        assertEquals("org.jay.launchstarterexample", appContext.packageName)
+        assertEquals("org.jay.appstarterexample", appContext.packageName)
     }
 }

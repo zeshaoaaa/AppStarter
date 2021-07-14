@@ -5,8 +5,8 @@ apply plugin: 'kotlin-android-extensions'
 android {
     compileSdkVersion 30
     defaultConfig {
-        applicationId "org.jay.launchstarterexample"
-        minSdkVersion 16
+        applicationId "org.jay.appstarterexample"
+        minSdkVersion 18
         targetSdkVersion 30
         versionCode 1
         versionName "1.0"

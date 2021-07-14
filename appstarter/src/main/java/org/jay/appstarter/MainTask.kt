@@ -1,11 +1,10 @@
-package org.jay.appstarter;
+package org.jay.appstarter
 
-// 主要任务
-public abstract class MainTask extends Task {
+// 在主线程执行的任务
+abstract class MainTask : Task() {
 
-    @Override
-    public boolean runOnMainThread() {
-        return true;
+    override fun runOnMainThread(): Boolean {
+        return true
     }
 
 }

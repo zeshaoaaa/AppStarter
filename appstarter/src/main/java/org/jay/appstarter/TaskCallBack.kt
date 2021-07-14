@@ -1,8 +1,8 @@
-package org.jay.appstarter;
+package org.jay.appstarter
 
 // 任务回调
-public interface TaskCallBack {
+interface TaskCallBack {
 
-    void call();
+    fun call()
 
 }
